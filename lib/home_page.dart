@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -10,6 +13,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _formKey = GlobalKey<FormState>();
+  late ConfettiController _controllerTopCenter;
 
   final nameController = TextEditingController();
   final friendNameController = TextEditingController();
@@ -17,10 +21,42 @@ class _HomePageState extends State<HomePage> {
   int? harmony;
 
   @override
+  void initState() {
+    super.initState();
+    _controllerTopCenter =
+        ConfettiController(duration: const Duration(seconds: 10));
+  }
+
+  @override
   void dispose() {
     nameController.dispose();
     friendNameController.dispose();
+    _controllerTopCenter.dispose();
     super.dispose();
+  }
+
+  Path drawStar(Size size) {
+    // Method to convert degree to radians
+    double degToRad(double deg) => deg * (pi / 180.0);
+
+    const numberOfPoints = 5;
+    final halfWidth = size.width / 2;
+    final externalRadius = halfWidth;
+    final internalRadius = halfWidth / 2.5;
+    final degreesPerStep = degToRad(360 / numberOfPoints);
+    final halfDegreesPerStep = degreesPerStep / 2;
+    final path = Path();
+    final fullAngle = degToRad(360);
+    path.moveTo(size.width, halfWidth);
+
+    for (double step = 0; step < fullAngle; step += degreesPerStep) {
+      path.lineTo(halfWidth + externalRadius * cos(step),
+          halfWidth + externalRadius * sin(step));
+      path.lineTo(halfWidth + internalRadius * cos(step + halfDegreesPerStep),
+          halfWidth + internalRadius * sin(step + halfDegreesPerStep));
+    }
+    path.close();
+    return path;
   }
 
   @override
@@ -42,52 +78,73 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Form(
         key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(32.0),
+        child: Stack(
           children: [
-            TextFormField(
-              controller: nameController,
-              keyboardType: TextInputType.text,
-              decoration: const InputDecoration(
-                helperText: "",
-                hintText: "Your Name",
-                prefixIcon: Icon(Icons.person, color: Colors.purple),
+            ListView(
+              padding: const EdgeInsets.all(32.0),
+              children: [
+                TextFormField(
+                  controller: nameController,
+                  keyboardType: TextInputType.text,
+                  decoration: const InputDecoration(
+                    helperText: "",
+                    hintText: "Your Name",
+                    prefixIcon: Icon(Icons.person, color: Colors.purple),
+                  ),
+                  validator: emptyValidator,
+                ),
+                TextFormField(
+                  controller: friendNameController,
+                  keyboardType: TextInputType.text,
+                  decoration: const InputDecoration(
+                    helperText: "",
+                    hintText: "Your Friend Name",
+                    prefixIcon: Icon(Icons.person, color: Colors.purple),
+                  ),
+                  validator: emptyValidator,
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+                Center(
+                    child: Text(
+                  harmony != null ? "%$harmony" : "",
+                  style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 45,
+                      color: Colors.purple.shade700),
+                ))
+              ]
+                  .map((child) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: child,
+                      ))
+                  .toList(),
+            ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _controllerTopCenter,
+                blastDirectionality: BlastDirectionality.explosive,
+                numberOfParticles: 50,
+                colors: const [
+                  Colors.green,
+                  Colors.blue,
+                  Colors.pink,
+                  Colors.orange,
+                  Colors.purple
+                ], // manually specify the colors to be used
+                createParticlePath: drawStar,
               ),
-              validator: emptyValidator,
             ),
-            TextFormField(
-              controller: friendNameController,
-              keyboardType: TextInputType.text,
-              decoration: const InputDecoration(
-                helperText: "",
-                hintText: "Your Friend Name",
-                prefixIcon: Icon(Icons.person, color: Colors.purple),
-              ),
-              validator: emptyValidator,
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            Center(
-                child: Text(
-              harmony != null ? "%$harmony" : "",
-              style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 45,
-                  color: Colors.purple.shade700),
-            ))
-          ]
-              .map((child) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: child,
-                  ))
-              .toList(),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final isValid = _formKey.currentState!.validate();
-          hesapla(nameController.text + friendNameController.text);
+          await hesapla(nameController.text + friendNameController.text);
+          _controllerTopCenter.play();
         },
         child: const Icon(
           Icons.favorite_rounded,
