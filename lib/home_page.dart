@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage> {
                 bottomLeft: Radius.circular(70))),
         elevation: 14,
         title: Text(
-          "Love Compatibility Calculator ",
+          "Love Compatibility Calculator",
           style: GoogleFonts.alike(fontSize: 22, fontWeight: FontWeight.w500),
         ),
         centerTitle: true,
@@ -162,6 +162,7 @@ class _HomePageState extends State<HomePage> {
     if (value!.isEmpty) {
       return 'Lütfen bir isim girin';
     }
+    return null;
   }
 
   hesapla(inputValue) {
