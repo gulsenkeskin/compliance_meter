@@ -126,13 +126,15 @@ class _HomePageState extends State<HomePage> {
               child: ConfettiWidget(
                 confettiController: _controllerTopCenter,
                 blastDirectionality: BlastDirectionality.explosive,
-                numberOfParticles: 50,
+                numberOfParticles: harmony??1,
                 colors: const [
-                  Colors.green,
-                  Colors.blue,
-                  Colors.pink,
-                  Colors.orange,
-                  Colors.purple
+                  Colors.greenAccent,
+                  Colors.blueAccent,
+                  Colors.pinkAccent,
+                  Colors.orangeAccent,
+                  Colors.purpleAccent,
+                  Colors.lightGreenAccent,
+                  Colors.amberAccent
                 ], // manually specify the colors to be used
                 createParticlePath: drawStar,
               ),
@@ -143,8 +145,10 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final isValid = _formKey.currentState!.validate();
-          await hesapla(nameController.text + friendNameController.text);
-          _controllerTopCenter.play();
+          if(isValid){
+            await hesapla(nameController.text + friendNameController.text);
+              // _controllerTopCenter.play();
+          }
         },
         child: const Icon(
           Icons.favorite_rounded,
@@ -161,6 +165,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   hesapla(inputValue) {
+    harmony=0;
     var input = inputValue.toLowerCase().split('');
     var list1 = input.toSet();
     var myMap = Map<String, int>.fromIterables(
@@ -170,7 +175,6 @@ class _HomePageState extends State<HomePage> {
     while (int.parse(valueList.join("")) > 100) {
       valueList = topla(valueList);
     }
-
     setState(() {
       harmony = int.parse(valueList.join(""));
     });
